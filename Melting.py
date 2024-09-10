@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from docx import Document  # برای ایجاد فایل Word
 from docx.shared import Inches
-
+# 
 # 1- خواندن فایل اکسل
 file_path = 'Melting_Profile.xlsx'
 df = pd.read_excel(file_path)

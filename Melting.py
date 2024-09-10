@@ -93,14 +93,9 @@ def plot_graph_melting():
         data = filtered_data[heat_number]
         
     # محاسبه میانگین متحرک
-    
-    
-    
-    
-    
-    
-    
-        fig, ax1 = plt.subplots(figsize=(8, 6))
+        data['HDRI Total flow rate (MA)'] = data['HDRI Total flow rate'].rolling(window=5).mean()
+        data['CDRI Total flow rate (MA)'] = data['CDRI Total flow rate'].rolling(window=0).mean()
+        fig, ax1 = plt.subplots(figsize=(16, 8))
         
         # محور X
         time = data['Time']
@@ -108,18 +103,18 @@ def plot_graph_melting():
         # محور Y1 (Power)
         power = data['[Power]']
         ax1.set_xlabel('Time (min)')
-        ax1.set_ylabel('Power', color='tab:red')
-        ax1.plot(time, power, label='Power', color='tab:red')
+        ax1.set_ylabel('Power(MW)', color='tab:red')
+        ax1.plot(time, power, label='Power', color='tab:red', linewidth=3)
         ax1.tick_params(axis='y', labelcolor='tab:red')
-        
+        ax1.set_ylim([0, 160])
         # محور Y2 (TAP, CDRI Total flow rate, HDRI Total flow rate)
         ax2 = ax1.twinx()
-        ax2.set_ylabel('Raw Material Charge', color='tab:blue')
-        ax2.plot(time, data['[TAP]'], label='TAP', color='tab:blue')
-        ax2.plot(time, data['CDRI Total flow rate'], label='CDRI Total flow rate', color='tab:green')
-        ax2.plot(time, data['HDRI Total flow rate'], label='HDRI Total flow rate', color='tab:orange')
+        ax2.set_ylabel('Charging Regime (t/min) & TAP Position', color='tab:blue')
+        ax2.plot(time, data['[TAP]'], label='TAP', color='tab:blue', linewidth=2)
+        ax2.plot(time, data['CDRI Total flow rate (MA)'], label='CDRI', color='tab:green')
+        ax2.plot(time, data['HDRI Total flow rate (MA)'], label='HDRI', color='tab:orange')
         ax2.tick_params(axis='y', labelcolor='tab:blue')
-
+        ax2.set_ylim([0, 15])
         # عنوان نمودار و تنظیم legend
         fig.suptitle(f"Melting Profile for Heat Number {heat_number}")
         fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes)
@@ -139,6 +134,11 @@ def plot_graph_melting():
         
     else:
         messagebox.showerror("خطا", "عدد وارد شده وجود ندارد.")
+        
+def close_plot(canvas, save_button, close_button):
+   canvas.get_tk_widget().destroy()
+   save_button.destroy()
+   close_button.destroy()
 
 # رسم نمودار Injection Profile
 def plot_graph_injection():
@@ -146,7 +146,7 @@ def plot_graph_injection():
     if heat_number in filtered_data:
         data = filtered_data[heat_number]
         
-        fig, ax1 = plt.subplots(figsize=(8, 6))
+        fig, ax1 = plt.subplots(figsize=(16,8))
         
         # محور X
         time = data['Time']
@@ -154,19 +154,19 @@ def plot_graph_injection():
         # محور Y1 (KT Carbon)
         kt_carbon = data['[KT Carbon]']
         ax1.set_xlabel('Time (min)')
-        ax1.set_ylabel('KT Carbon', color='tab:red')
-        ax1.plot(time, kt_carbon, label='KT Carbon', color='tab:red')
+        ax1.set_ylabel('Carbon Injection Flow Rate (kg/min)', color='tab:red')
+        ax1.plot(time, kt_carbon, label='KTC', color='tab:red', linewidth=3)
         ax1.tick_params(axis='y', labelcolor='tab:red')
-        
+        ax1.set_ylim([0, 70])
         # محور Y2 (Lime, Coke, Dolomite, Oxygen)
         ax2 = ax1.twinx()
-        ax2.set_ylabel('Flow Rates', color='tab:blue')
-        ax2.plot(time, data['Lime Total flow rate'], label='Lime Total flow rate', color='tab:blue')
-        ax2.plot(time, data['Coke Total flow rate'], label='Coke Total flow rate', color='tab:green')
-        ax2.plot(time, data['Dolomite Total flow rate'], label='Dolomite Total flow rate', color='tab:orange')
-        ax2.plot(time, data['Oxygen/ min'], label='Oxygen/ min', color='tab:purple')
+        ax2.set_ylabel('Oxygen inj. & Lime, Coke, Dolo charging', color='tab:blue')
+        ax2.plot(time, data['Lime Total flow rate'], label='Lime (kg/min)', color='tab:blue', linewidth=3)
+        ax2.plot(time, data['Coke Total flow rate'], label='Coke (kg/min)', color='tab:green', linewidth=2)
+        ax2.plot(time, data['Dolomite Total flow rate'], label='Dolomite(kg/min)', color='tab:orange', linewidth=2)
+        ax2.plot(time, data['Oxygen/ min'], label='KTO (Nm^3/min)', color='tab:purple', linewidth=3)
         ax2.tick_params(axis='y', labelcolor='tab:blue')
-
+        ax2.set_ylim([0, 700])
         # عنوان نمودار و تنظیم legend
         fig.suptitle(f"Injection Profile for Heat Number {heat_number}")
         fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes)
@@ -187,6 +187,11 @@ def plot_graph_injection():
     else:
         messagebox.showerror("خطا", "عدد وارد شده وجود ندارد.")
 
+def close_plot(canvas, save_button, close_button):
+    canvas.get_tk_widget().destroy()
+    save_button.destroy()
+    close_button.destroy()
+
 # تابع ذخیره نمودار
 def save_graph(fig):
     save_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png")])
@@ -201,19 +206,23 @@ def save_all_graphs_to_word():
         for heat_number in filtered_data:
             data = filtered_data[heat_number]
 # نمودار Melting Profile
-            fig, ax1 = plt.subplots(figsize=(8, 6))
+            data['HDRI Total flow rate (MA)'] = data['HDRI Total flow rate'].rolling(window=5).mean()
+            data['CDRI Total flow rate (MA)'] = data['CDRI Total flow rate'].rolling(window=0).mean()
+            fig, ax1 = plt.subplots(figsize=(16, 8))
             time = data['Time']
             power = data['[Power]']
             ax1.set_xlabel('Time (min)')
-            ax1.set_ylabel('Power', color='tab:red')
-            ax1.plot(time, power, label='Power', color='tab:red')
+            ax1.set_ylabel('Power(MW)', color='tab:red')
+            ax1.plot(time, power, label='Power', color='tab:red', linewidth=3)
             ax1.tick_params(axis='y', labelcolor='tab:red')
+            ax1.set_ylim([0, 160])
             ax2 = ax1.twinx()
-            ax2.set_ylabel('Raw Material Charge', color='tab:blue')
-            ax2.plot(time, data['[TAP]'], label='TAP', color='tab:blue')
-            ax2.plot(time, data['CDRI Total flow rate'], label='CDRI Total flow rate', color='tab:green')
-            ax2.plot(time, data['HDRI Total flow rate'], label='HDRI Total flow rate', color='tab:orange')
+            ax2.set_ylabel('Charging Regime (t/min) & TAP Position', color='tab:blue')
+            ax2.plot(time, data['[TAP]'], label='TAP', color='tab:blue', linewidth=2)
+            ax2.plot(time, data['CDRI Total flow rate (MA)'], label='CDRI', color='tab:green')
+            ax2.plot(time, data['HDRI Total flow rate (MA)'], label='HDRI', color='tab:orange')
             ax2.tick_params(axis='y', labelcolor='tab:blue')
+            ax2.set_ylim([0, 15])
             fig.suptitle(f"Melting Profile for Heat Number {heat_number}")
             fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes)
             fig.savefig('melting_temp.png')
@@ -222,19 +231,21 @@ def save_all_graphs_to_word():
             plt.close(fig)
             
             # نمودار Injection Profile
-            fig, ax1 = plt.subplots(figsize=(8, 6))
+            fig, ax1 = plt.subplots(figsize=(16, 8))
             kt_carbon = data['[KT Carbon]']
             ax1.set_xlabel('Time (min)')
-            ax1.set_ylabel('KT Carbon', color='tab:red')
-            ax1.plot(time, kt_carbon, label='KT Carbon', color='tab:red')
+            ax1.set_ylabel('Carbon Injection Flow Rate (kg/min)', color='tab:red')
+            ax1.plot(time, kt_carbon, label='KTC', color='tab:red', linewidth=3)
             ax1.tick_params(axis='y', labelcolor='tab:red')
+            ax1.set_ylim([0, 70])
             ax2 = ax1.twinx()
-            ax2.set_ylabel('Flow Rates', color='tab:blue')
-            ax2.plot(time, data['Lime Total flow rate'], label='Lime Total flow rate', color='tab:blue')
-            ax2.plot(time, data['Coke Total flow rate'], label='Coke Total flow rate', color='tab:green')
-            ax2.plot(time, data['Dolomite Total flow rate'], label='Dolomite Total flow rate', color='tab:orange')
-            ax2.plot(time, data['Oxygen/ min'], label='Oxygen/ min', color='tab:purple')
+            ax2.set_ylabel('Oxygen inj. & Lime, Coke, Dolo charging', color='tab:blue')
+            ax2.plot(time, data['Lime Total flow rate'], label='Lime (kg/min)', color='tab:blue', linewidth=3)
+            ax2.plot(time, data['Coke Total flow rate'], label='Coke (kg/min)', color='tab:green', linewidth=2)
+            ax2.plot(time, data['Dolomite Total flow rate'], label='Dolomite(kg/min)', color='tab:orange', linewidth=2)
+            ax2.plot(time, data['Oxygen/ min'], label='KTO (Nm^3/min)', color='tab:purple', linewidth=3)
             ax2.tick_params(axis='y', labelcolor='tab:blue')
+            ax2.set_ylim([0, 700])
             fig.suptitle(f"Injection Profile for Heat Number {heat_number}")
             fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes)
             fig.savefig('injection_temp.png')
